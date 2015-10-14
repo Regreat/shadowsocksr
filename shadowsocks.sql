@@ -5,6 +5,7 @@ CREATE TABLE `user` (
   `email` varchar(32) NOT NULL,
   `pass` varchar(16) NOT NULL,
   `passwd` varchar(16) NOT NULL,
+  `obfs` varchar(64) NOT NULL DEFAULT 'http_simple_compatible',
   `t` int(11) NOT NULL DEFAULT '0',
   `u` bigint(20) NOT NULL,
   `d` bigint(20) NOT NULL,
@@ -21,4 +22,4 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('7', 'test@test.com', '123456', '0000000', '1410609560', '0', '0', '9320666234', '50000', '1', '1', '7', '0', '0');
+INSERT INTO `user` VALUES ('7', 'test@test.com', '123456', '0000000', 'http_simple', '1410609560', '0', '0', '9320666234', '50000', '1', '1', '7', '0', '0');

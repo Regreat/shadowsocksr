@@ -8,10 +8,12 @@ import sys
 from server_pool import ServerPool
 import Config
 import traceback
+from shadowsocks import shell
 
 class DbTransfer(object):
 
 	instance = None
+	config = shell.get_config(False)
 
 	def __init__(self):
 		self.last_get_transfer = {}
@@ -81,12 +83,21 @@ class DbTransfer(object):
 			reload(switchrule)
 			keys = switchrule.getKeys()
 		except Exception as e:
-			keys = ['port', 'u', 'd', 'transfer_enable', 'passwd', 'enable' ]
+			keys = ['port', 'u', 'd', 'transfer_enable', 'passwd', 'obfs', 'enable']
 		reload(cymysql)
 		conn = cymysql.connect(host=Config.MYSQL_HOST, port=Config.MYSQL_PORT, user=Config.MYSQL_USER,
 								passwd=Config.MYSQL_PASS, db=Config.MYSQL_DB, charset='utf8')
 		cur = conn.cursor()
-		cur.execute("SELECT " + ','.join(keys) + " FROM user")
+		# 如果没有obfs字段，则从keys中移除obfs，并重新读取。
+		try:
+			cur.execute("SELECT " + ','.join(keys) + " FROM user")
+		except Exception as e:
+			# 如果是obfs引起的错误则进行进一步处理，否则正常抛出错误。
+			if str(e) == """(1054, u"Unknown column 'obfs' in 'field list'")""" or str(e) == """(1054, "Unknown column 'obfs' in 'field list'")""" :
+				keys.remove('obfs')
+				cur.execute("SELECT " + ','.join(keys) + " FROM user")
+			else:
+				raise
 		rows = []
 		for r in cur.fetchall():
 			d = {}
@@ -116,6 +127,8 @@ class DbTransfer(object):
 
 			port = row['port']
 			passwd = row['passwd']
+			# 如果没有obfs字段，则从本地配置文件中读取。
+			obfs = row.get('obfs', DbTransfer.config['obfs'])
 			cur_servers[port] = passwd
 
 			if ServerPool.get_instance().server_is_run(port) > 0:
@@ -127,11 +140,20 @@ class DbTransfer(object):
 					#password changed
 					logging.info('db stop server at port [%s] reason: password changed' % (port,))
 					ServerPool.get_instance().cb_del_server(port)
-					ServerPool.get_instance().new_server(port, passwd)
+					logging.info('db start server at port [%s] pass [%s] obfs [%s]' % (port, passwd, obfs))
+					ServerPool.get_instance().new_server(port, passwd, obfs)
+				elif (port in ServerPool.get_instance().tcp_servers_pool and ServerPool.get_instance().tcp_servers_pool[port]._config['obfs'] != obfs) \
+						or (port in ServerPool.get_instance().tcp_ipv6_servers_pool and ServerPool.get_instance().tcp_ipv6_servers_pool[port]._config['obfs'] != obfs):
+					# obfs changed
+					logging.info('db stop server at port [%s] reason: obfs changed' % (port,))
+					ServerPool.get_instance().cb_del_server(port)
+					logging.info('db start server at port [%s] pass [%s] obfs [%s]' % (port, passwd, obfs))
+					ServerPool.get_instance().new_server(port, passwd, obfs)
+
 
 			elif allow and ServerPool.get_instance().server_run_status(port) is False:
-				logging.info('db start server at port [%s] pass [%s]' % (port, passwd))
-				ServerPool.get_instance().new_server(port, passwd)
+				logging.info('db start server at port [%s] pass [%s] obfs [%s]' % (port, passwd, obfs))
+				ServerPool.get_instance().new_server(port, passwd, obfs)
 
 		for row in last_rows:
 			if row['port'] in cur_servers:

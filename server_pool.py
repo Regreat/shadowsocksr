@@ -99,9 +99,10 @@ class ServerPool(object):
 				return False
 		return True
 
-	def new_server(self, port, password):
+	def new_server(self, port, password, obfs):
 		ret = True
 		port = int(port)
+		obfs = str(obfs)
 		ipv6_ok = False
 
 		if 'server_ipv6' in self.config:
@@ -115,6 +116,7 @@ class ServerPool(object):
 				a_config['server'] = a_config['server_ipv6']
 				a_config['server_port'] = port
 				a_config['password'] = password
+				a_config['obfs'] = obfs
 				try:
 					logging.info("starting server at [%s]:%d" % (a_config['server'], port))
 
@@ -139,6 +141,7 @@ class ServerPool(object):
 				a_config = self.config.copy()
 				a_config['server_port'] = port
 				a_config['password'] = password
+				a_config['obfs'] = obfs
 				try:
 					logging.info("starting server at %s:%d" % (a_config['server'], port))
 
