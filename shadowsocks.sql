@@ -22,4 +22,4 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES ('7', 'test@test.com', '123456', '0000000', 'http_simple', '1410609560', '0', '0', '9320666234', '50000', '1', '1', '7', '0', '0');
+INSERT INTO `user` VALUES ('7', 'test@test.com', '123456', '0000000', 'http_simple_compatible', '1410609560', '0', '0', '9320666234', '50000', '1', '1', '7', '0', '0');
