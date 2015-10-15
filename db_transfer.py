@@ -34,7 +34,9 @@ class DbTransfer(object):
 		conn.commit()
 		conn.close()
 		if has_obfs == None:
-			logging.info('no "obfs" in db')
+			logging.basicConfig(level=logging.INFO,
+                        format='%(levelname)-s: %(message)s')
+			logging.info('no "obfs" in db, use config.json')
 			DbTransfer.config = shell.get_config(False)
 			return False
 		else:
@@ -137,7 +139,7 @@ class DbTransfer(object):
 			port = row['port']
 			passwd = row['passwd']
 			# 如果没有obfs字段，则从本地配置文件中读取。
-			obfs = row.get('obfs', DbTransfer.config['obfs'])
+			obfs = row['obfs'] if DbTransfer.has_obfs else DbTransfer.config['obfs']
 			cur_servers[port] = passwd
 
 			if ServerPool.get_instance().server_is_run(port) > 0:
