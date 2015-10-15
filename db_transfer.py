@@ -13,7 +13,6 @@ from shadowsocks import shell
 class DbTransfer(object):
 
 	instance = None
-	config = shell.get_config(False)
 
 	def __init__(self):
 		self.last_get_transfer = {}
@@ -23,6 +22,23 @@ class DbTransfer(object):
 		if DbTransfer.instance is None:
 			DbTransfer.instance = DbTransfer()
 		return DbTransfer.instance
+
+	@staticmethod
+	def has_obfs():
+		conn = cymysql.connect(host=Config.MYSQL_HOST, port=Config.MYSQL_PORT, user=Config.MYSQL_USER,
+								passwd=Config.MYSQL_PASS, db=Config.MYSQL_DB, charset='utf8')
+		cur = conn.cursor()
+		cur.execute('Describe user obfs')
+		has_obfs = cur.fetchone()
+		cur.close()
+		conn.commit()
+		conn.close()
+		if has_obfs == None:
+			logging.info('no "obfs" in db')
+			DbTransfer.config = shell.get_config(False)
+			return False
+		else:
+			return True
 
 	def push_db_all_user(self):
 		#更新用户流量到数据库
@@ -88,16 +104,9 @@ class DbTransfer(object):
 		conn = cymysql.connect(host=Config.MYSQL_HOST, port=Config.MYSQL_PORT, user=Config.MYSQL_USER,
 								passwd=Config.MYSQL_PASS, db=Config.MYSQL_DB, charset='utf8')
 		cur = conn.cursor()
-		# 如果没有obfs字段，则从keys中移除obfs，并重新读取。
-		try:
-			cur.execute("SELECT " + ','.join(keys) + " FROM user")
-		except Exception as e:
-			# 如果是obfs引起的错误则进行进一步处理，否则正常抛出错误。
-			if str(e) == """(1054, u"Unknown column 'obfs' in 'field list'")""" or str(e) == """(1054, "Unknown column 'obfs' in 'field list'")""" :
-				keys.remove('obfs')
-				cur.execute("SELECT " + ','.join(keys) + " FROM user")
-			else:
-				raise
+		if not DbTransfer.has_obfs:
+			keys.remove('obfs')
+		cur.execute("SELECT " + ','.join(keys) + " FROM user")
 		rows = []
 		for r in cur.fetchall():
 			d = {}
@@ -169,6 +178,7 @@ class DbTransfer(object):
 		timeout = 60
 		socket.setdefaulttimeout(timeout)
 		last_rows = []
+		DbTransfer.has_obfs = DbTransfer.has_obfs()
 		while True:
 			try:
 				DbTransfer.get_instance().push_db_all_user()
