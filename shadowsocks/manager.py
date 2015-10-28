@@ -216,6 +216,7 @@ def test():
             },
             'method': 'aes-256-cfb',
             'obfs': 'http_simple',
+            'obfs_param': '',
             'manager_address': '127.0.0.1:6001',
             'timeout': 60,
             'fast_open': False,
