@@ -8,9 +8,6 @@ cache:
   directories:
     - dante-1.4.0
 
-virtualenv:
-  system_site_packages: true
-
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq build-essential libssl-dev swig python-m2crypto python-numpy dnsutils iproute nginx bc
