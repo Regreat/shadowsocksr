@@ -87,7 +87,7 @@ Bugs and Issues
 
 
 [Android]:           https://github.com/shadowsocks/shadowsocks-android
-[Build Status]:      https://img.shields.io/travis/shadowsocks/shadowsocks/master.svg?style=flat
+[Build Status]:      https://travis-ci.org/falseen/shadowsocks.svg?branch=master-travis
 [Configuration]:     https://github.com/shadowsocks/shadowsocks/wiki/Configuration-via-Config-File
 [Coverage Status]:   https://jenkins.shadowvpn.org/result/shadowsocks
 [Coverage]:          https://jenkins.shadowvpn.org/job/Shadowsocks/ws/PYENV/py34/label/linux/htmlcov/index.html
