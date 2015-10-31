@@ -26,7 +26,6 @@ import signal
 if __name__ == '__main__':
     import inspect
     file_path = os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe())))
-    os.chdir(file_path)
     sys.path.insert(0, os.path.join(file_path, '../'))
 
 from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, \
@@ -53,6 +52,9 @@ def main():
                 config['port_password'][a_server_port] = config['password']
         else:
             config['port_password'][str(server_port)] = config['password']
+
+    if not config.get('ipv6', False):
+        asyncdns.IPV6_CONNECTION_SUPPORT = False
 
     if config.get('manager_address', 0):
         logging.info('entering manager mode')
