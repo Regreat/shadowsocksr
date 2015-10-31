@@ -22,22 +22,22 @@ command="coverage run -p -a shadowsocks/$module.py"
 
 mkdir -p tmp
 
-run_test 0 -c tests/aes.json -d stop --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 0 -c tests/aes.json -d stop 
 
-run_test 0 -c tests/aes.json -d start --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 0 -c tests/aes.json -d stop --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 0 -c tests/aes.json -d start 
+run_test 0 -c tests/aes.json -d stop 
 
-run_test 0 -c tests/aes.json -d start --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 1 -c tests/aes.json -d start --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 0 -c tests/aes.json -d stop --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 0 -c tests/aes.json -d start 
+run_test 1 -c tests/aes.json -d start 
+run_test 0 -c tests/aes.json -d stop 
 
-run_test 0 -c tests/aes.json -d start --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 0 -c tests/aes.json -d restart --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 0 -c tests/aes.json -d stop --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 0 -c tests/aes.json -d start 
+run_test 0 -c tests/aes.json -d restart 
+run_test 0 -c tests/aes.json -d stop 
 
-run_test 0 -c tests/aes.json -d restart --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
-run_test 0 -c tests/aes.json -d stop --pid-file tmp/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 0 -c tests/aes.json -d restart 
+run_test 0 -c tests/aes.json -d stop 
 
-run_test 1 -c tests/aes.json -d start --pid-file tmp/not_exist/shadowsocks.pid --log-file tmp/shadowsocks.log
+run_test 1 -c tests/aes.json -d start
 
 done
