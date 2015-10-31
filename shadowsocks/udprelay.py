@@ -74,6 +74,7 @@ import traceback
 from shadowsocks import encrypt, eventloop, lru_cache, common, shell
 from shadowsocks.common import pre_parse_header, parse_header, pack_addr
 
+
 # we clear at most TIMEOUTS_CLEAN_SIZE timeouts each time
 TIMEOUTS_CLEAN_SIZE = 512
 
@@ -125,6 +126,7 @@ RSP_STATE_ERROR = b"\x03"
 RSP_STATE_DISCONNECT = b"\x04"
 RSP_STATE_REDIRECT = b"\x05"
 
+
 class UDPLocalAddress(object):
     def __init__(self, addr):
         self.addr = addr
@@ -133,10 +135,12 @@ class UDPLocalAddress(object):
     def is_timeout(self):
         return time.time() - self.last_activity > 30
 
+
 class PacketInfo(object):
     def __init__(self, data):
         self.data = data
         self.time = time.time()
+
 
 class SendingQueue(object):
     def __init__(self):
@@ -172,13 +176,14 @@ class SendingQueue(object):
             ret_data = self.queue[offset]
             if curtime - ret_data.time > self.interval:
                 ret_data.time = curtime
-                ret_list.append( (offset, ret_data.data) )
+                ret_list.append((offset, ret_data.data))
         return ret_list
 
     def set_finish(self, begin_id, done_list):
         while self.begin_id < begin_id:
             self.begin_id += 1
             del self.queue[self.begin_id]
+
 
 class RecvQueue(object):
     def __init__(self):
@@ -207,7 +212,7 @@ class RecvQueue(object):
     def set_end(self, end_id):
         if end_id > self.end_id:
             eid = self.end_id
-            while eid < pack_id:
+            while eid < end_id:
                 self.miss_queue.add(eid)
                 eid += 1
             self.end_id = end_id
@@ -235,6 +240,7 @@ class RecvQueue(object):
                 break
             missing.append(i - begin_id)
         return (begin_id, missing)
+
 
 class AddressMap(object):
     def __init__(self):
@@ -268,10 +274,11 @@ class AddressMap(object):
         else:
             return None
 
+
 class TCPRelayHandler(object):
     def __init__(self, server, reqid_to_handlers, fd_to_handlers, loop,
-                local_sock, local_id, client_param, config,
-                dns_resolver, is_local):
+                 local_sock, local_id, client_param, config, dns_resolver,
+                 is_local):
         self._server = server
         self._reqid_to_handlers = reqid_to_handlers
         self._fd_to_handlers = fd_to_handlers
@@ -306,7 +313,8 @@ class TCPRelayHandler(object):
         #loop.add(local_sock, eventloop.POLL_IN | eventloop.POLL_ERR)
         self.last_activity = 0
         self._update_activity()
-        self._random_mtu_size = [random.randint(POST_MTU_MIN, POST_MTU_MAX) for i in range(1024)]
+        self._random_mtu_size = [random.randint(POST_MTU_MIN, POST_MTU_MAX)
+                                 for i in range(1024)]
         self._random_mtu_index = 0
 
         self._rand_data = b"\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10" * 4
@@ -363,7 +371,7 @@ class TCPRelayHandler(object):
                     event |= eventloop.POLL_OUT
                 self._loop.modify(self._remote_sock, event)
 
-    def _write_to_sock(self, data, sock, addr = None):
+    def _write_to_sock(self, data, sock, addr=None):
         # write data to sock
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
@@ -428,7 +436,8 @@ class TCPRelayHandler(object):
         return True
 
     def _create_remote_socket(self, ip, port):
-        addrs = socket.getaddrinfo(ip, port, 0, socket.SOCK_STREAM, socket.SOL_TCP)
+        addrs = socket.getaddrinfo(ip, port, 0, socket.SOCK_STREAM,
+                                   socket.SOL_TCP)
         if len(addrs) == 0:
             raise Exception("getaddrinfo failed for %s:%d" % (ip, port))
         af, socktype, proto, canonname, sa = addrs[0]
@@ -458,7 +467,8 @@ class TCPRelayHandler(object):
                     self._stage = STAGE_CONNECTING
                     remote_addr = ip
                     remote_port = self._remote_address[1]
-                    logging.info("connect to %s : %d" % (remote_addr, remote_port))
+                    logging.info("connect to %s : %d" %
+                                 (remote_addr, remote_port))
 
                     remote_sock = self._create_remote_socket(remote_addr,
                                                              remote_port)
@@ -469,9 +479,8 @@ class TCPRelayHandler(object):
                                 errno.EINPROGRESS:
                             pass
 
-                    self._loop.add(remote_sock,
-                                   eventloop.POLL_ERR | eventloop.POLL_OUT,
-                                   self._server)
+                    self._loop.add(remote_sock, eventloop.POLL_ERR
+                                   | eventloop.POLL_OUT, self._server)
                     self._update_stream(STREAM_UP, WAIT_STATUS_READWRITING)
                     self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)
                     self._stage = STAGE_STREAM
@@ -479,7 +488,8 @@ class TCPRelayHandler(object):
                     addr = self.get_local_address()
 
                     for i in range(2):
-                        rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT_REMOTE, RSP_STATE_CONNECTEDREMOTE)
+                        rsp_data = self._pack_rsp_data(
+                            CMD_RSP_CONNECT_REMOTE, RSP_STATE_CONNECTEDREMOTE)
                         self._write_to_sock(rsp_data, self._local_sock, addr)
 
                     return
@@ -535,8 +545,10 @@ class TCPRelayHandler(object):
                 if beg_pos + POST_MTU_MAX >= max_len:
                     split_pos = max_len
                 else:
-                    split_pos = beg_pos + self._random_mtu_size[self._random_mtu_index]
-                    self._random_mtu_index = (self._random_mtu_index + 1) & 0x3ff
+                    split_pos = beg_pos + self._random_mtu_size[
+                        self._random_mtu_index]
+                    self._random_mtu_index = (
+                                                 self._random_mtu_index + 1) & 0x3ff
                     #split_pos = beg_pos + random.randint(POST_MTU_MIN, POST_MTU_MAX)
                 data = recv_data[beg_pos:split_pos]
                 beg_pos = split_pos
@@ -589,7 +601,9 @@ class TCPRelayHandler(object):
 
     def _pack_rsp_data(self, cmd, data):
         reqid_str = struct.pack(">H", self._request_id)
-        return b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, data, self._rand_data[:random.randint(0, len(self._rand_data))], reqid_str])
+        return b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, data,
+                         self._rand_data[:random.randint(0, len(
+                             self._rand_data))], reqid_str])
 
     def _pack_rnd_data(self, data):
         length = random.randint(0, len(self._rand_data))
@@ -598,20 +612,26 @@ class TCPRelayHandler(object):
         elif length == 1:
             return b"\x81" + data
         elif length < 256:
-            return b"\x80" + common.chr(length) + self._rand_data[:length - 2] + data
+            return b"\x80" + common.chr(length) + self._rand_data[:length -
+                                                                   2] + data
         else:
-            return b"\x82" + struct.pack(">H", length) + self._rand_data[:length - 3] + data
+            return b"\x82" + struct.pack(
+                ">H", length) + self._rand_data[:length - 3] + data
 
     def _pack_post_data(self, cmd, pack_id, data):
         reqid_str = struct.pack(">H", self._request_id)
         recv_id = self._recvqueue.get_begin_id()
-        rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, struct.pack(">I", recv_id), struct.pack(">I", pack_id), data, reqid_str])
+        rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str,
+                             struct.pack(">I", recv_id), struct.pack(
+                ">I", pack_id), data, reqid_str])
         return rsp_data
 
     def _pack_post_data_64(self, cmd, send_id, pack_id, data):
         reqid_str = struct.pack(">H", self._request_id)
         recv_id = self._recvqueue.get_begin_id()
-        rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, struct.pack(">Q", recv_id), struct.pack(">Q", pack_id), data, reqid_str])
+        rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str,
+                             struct.pack(">Q", recv_id), struct.pack(
+                ">Q", pack_id), data, reqid_str])
         return rsp_data
 
     def sweep_timeout(self):
@@ -623,9 +643,11 @@ class TCPRelayHandler(object):
             for pid in missing:
                 data += struct.pack(">H", pid)
             rsp_data = self._pack_post_data(CMD_SYN_STATUS, pack_id, data)
+            addr = self.get_local_address()
             self._write_to_sock(rsp_data, self._local_sock, addr)
 
-    def handle_stream_sync_status(self, addr, cmd, request_id, pack_id, max_send_id, data):
+    def handle_stream_sync_status(self, addr, cmd, request_id, pack_id,
+                                  max_send_id, data):
         missing_list = []
         while len(data) >= 2:
             pid = struct.unpack(">H", data[0:2])[0]
@@ -646,7 +668,8 @@ class TCPRelayHandler(object):
         for pid in missing:
             pack_ids_data += struct.pack(">H", pid)
 
-        rsp_data = self._pack_rnd_data(self._pack_post_data(CMD_SYN_STATUS, send_id, pack_ids_data))
+        rsp_data = self._pack_rnd_data(self._pack_post_data(
+            CMD_SYN_STATUS, send_id, pack_ids_data))
         self._write_to_sock(rsp_data, self._local_sock, addr)
 
         send_list = self._sendingqueue.get_data_list(pack_id, missing_list)
@@ -654,7 +677,8 @@ class TCPRelayHandler(object):
             rsp_data = self._pack_post_data(CMD_POST, post_pack_id, post_data)
             self._write_to_sock(rsp_data, self._local_sock, addr)
             if post_pack_id <= DOUBLE_SEND_BEG_IDS:
-                rsp_data = self._pack_post_data(CMD_POST, post_pack_id, post_data)
+                rsp_data = self._pack_post_data(CMD_POST, post_pack_id,
+                                                post_data)
                 self._write_to_sock(rsp_data, self._local_sock, addr)
 
     def handle_client(self, addr, cmd, request_id, data):
@@ -676,7 +700,8 @@ class TCPRelayHandler(object):
         if self._stage == STAGE_RSP_ID:
             if cmd == CMD_CONNECT:
                 for i in range(2):
-                    rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT, RSP_STATE_CONNECTED)
+                    rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT,
+                                                   RSP_STATE_CONNECTED)
                     self._write_to_sock(rsp_data, self._local_sock, addr)
             elif cmd == CMD_CONNECT_REMOTE:
                 local_id = data[0:4]
@@ -686,25 +711,30 @@ class TCPRelayHandler(object):
                     if header_result is None:
                         return
                     connecttype, remote_addr, remote_port, header_length = header_result
-                    self._remote_address = (common.to_str(remote_addr), remote_port)
+                    self._remote_address = (common.to_str(remote_addr),
+                                            remote_port)
                     self._stage = STAGE_DNS
                     self._dns_resolver.resolve(remote_addr,
                                                self._handle_dns_resolved)
-                    logging.info('TCP connect %s:%d from %s:%d' % (remote_addr, remote_port, addr[0], addr[1]))
+                    logging.info('TCP connect %s:%d from %s:%d' %
+                                 (remote_addr, remote_port, addr[0], addr[1]))
                 else:
                     # ileagal request
-                    rsp_data = self._pack_rsp_data(CMD_DISCONNECT, RSP_STATE_EMPTY)
+                    rsp_data = self._pack_rsp_data(CMD_DISCONNECT,
+                                                   RSP_STATE_EMPTY)
                     self._write_to_sock(rsp_data, self._local_sock, addr)
         elif self._stage == STAGE_CONNECTING:
             if cmd == CMD_CONNECT_REMOTE:
                 local_id = data[0:4]
                 if self._local_id == local_id:
                     for i in range(2):
-                        rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT_REMOTE, RSP_STATE_CONNECTEDREMOTE)
+                        rsp_data = self._pack_rsp_data(
+                            CMD_RSP_CONNECT_REMOTE, RSP_STATE_CONNECTEDREMOTE)
                         self._write_to_sock(rsp_data, self._local_sock, addr)
                 else:
                     # ileagal request
-                    rsp_data = self._pack_rsp_data(CMD_DISCONNECT, RSP_STATE_EMPTY)
+                    rsp_data = self._pack_rsp_data(CMD_DISCONNECT,
+                                                   RSP_STATE_EMPTY)
                     self._write_to_sock(rsp_data, self._local_sock, addr)
         elif self._stage == STAGE_STREAM:
             if len(data) < 4:
@@ -721,7 +751,8 @@ class TCPRelayHandler(object):
             else:
                 data = data[4:]
             if cmd == CMD_CONNECT_REMOTE:
-                rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT_REMOTE, RSP_STATE_CONNECTEDREMOTE)
+                rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT_REMOTE,
+                                               RSP_STATE_CONNECTEDREMOTE)
                 self._write_to_sock(rsp_data, self._local_sock, addr)
             elif cmd == CMD_POST:
                 recv_id = struct.unpack(">I", data[0:4])[0]
@@ -743,12 +774,14 @@ class TCPRelayHandler(object):
                 pack_id = struct.unpack(">I", data[0:4])[0]
                 max_send_id = struct.unpack(">I", data[4:8])[0]
                 data = data[8:]
-                self.handle_stream_sync_status(addr, cmd, request_id, pack_id, max_send_id, data)
+                self.handle_stream_sync_status(addr, cmd, request_id, pack_id,
+                                               max_send_id, data)
             elif cmd == CMD_SYN_STATUS_64:
                 pack_id = struct.unpack(">Q", data[0:8])[0]
                 max_send_id = struct.unpack(">Q", data[8:16])[0]
                 data = data[16:]
-                self.handle_stream_sync_status(addr, cmd, request_id, pack_id, max_send_id, data)
+                self.handle_stream_sync_status(addr, cmd, request_id, pack_id,
+                                               max_send_id, data)
             while self._recvqueue.has_data():
                 pack_id, post_data = self._recvqueue.get_data()
                 self._write_to_sock(post_data, self._remote_sock)
@@ -765,12 +798,14 @@ class TCPRelayHandler(object):
                 pack_id = struct.unpack(">I", data[0:4])[0]
                 max_send_id = struct.unpack(">I", data[4:8])[0]
                 data = data[8:]
-                self.handle_stream_sync_status(addr, cmd, request_id, pack_id, max_send_id, data)
+                self.handle_stream_sync_status(addr, cmd, request_id, pack_id,
+                                               max_send_id, data)
             elif cmd == CMD_SYN_STATUS_64:
                 pack_id = struct.unpack(">Q", data[0:8])[0]
                 max_send_id = struct.unpack(">Q", data[8:16])[0]
                 data = data[16:]
-                self.handle_stream_sync_status(addr, cmd, request_id, pack_id, max_send_id, data)
+                self.handle_stream_sync_status(addr, cmd, request_id, pack_id,
+                                               max_send_id, data)
 
     def handle_event(self, sock, event):
         # handle all events in this handler and dispatch them to methods
@@ -822,8 +857,7 @@ class TCPRelayHandler(object):
             return
         self._stage = STAGE_DESTROYED
         if self._remote_address:
-            logging.debug('destroy: %s:%d' %
-                          self._remote_address)
+            logging.debug('destroy: %s:%d' % self._remote_address)
         else:
             logging.debug('destroy')
         if self._remote_sock:
@@ -846,6 +880,7 @@ class TCPRelayHandler(object):
             self._local_sock = None
             del self._reqid_to_handlers[self._request_id]
         self._server.remove_handler(self)
+
 
 def client_key(source_addr, server_af):
     # notice this is server af, not dest af
@@ -887,7 +922,7 @@ class UDPRelay(object):
 
         self._timeouts = []  # a list for all the handlers
         # we trim the timeouts once a while
-        self._timeout_offset = 0   # last checked position for timeout
+        self._timeout_offset = 0  # last checked position for timeout
         self._handler_to_timeouts = {}  # key: handler value: index in timeouts
 
         if 'forbidden_ip' in config:
@@ -904,8 +939,10 @@ class UDPRelay(object):
         server_socket = socket.socket(af, socktype, proto)
         server_socket.bind((self._listen_addr, self._listen_port))
         server_socket.setblocking(False)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 32)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 32)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 *
+                                 32)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 *
+                                 32)
         self._server_socket = server_socket
         self._stat_callback = stat_callback
 
@@ -961,7 +998,9 @@ class UDPRelay(object):
     def _pack_rsp_data(self, cmd, request_id, data):
         _rand_data = b"123456789abcdefghijklmnopqrstuvwxyz" * 2
         reqid_str = struct.pack(">H", request_id)
-        return b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, data, _rand_data[:random.randint(0, len(_rand_data))], reqid_str])
+        return b''.join([CMD_VER_STR, common.chr(cmd), reqid_str, data,
+                         _rand_data[:random.randint(0, len(
+                             _rand_data))], reqid_str])
 
     def _handle_server(self):
         server = self._server_socket
@@ -1005,50 +1044,73 @@ class UDPRelay(object):
                             if req_id in self._reqid_to_hd:
                                 for i in range(64):
                                     req_id = random.randint(1, 65535)
-                                    if type(self._reqid_to_hd[req_id]) is tuple:
+                                    if type(self._reqid_to_hd[
+                                                req_id]) is tuple:
                                         break
                             # return req id
                             self._reqid_to_hd[req_id] = (data[2][0:4], None)
-                            rsp_data = self._pack_rsp_data(CMD_RSP_CONNECT, req_id, RSP_STATE_CONNECTED)
-                            data_to_send = encrypt.encrypt_all(self._password, self._method, 1, rsp_data)
+                            rsp_data = self._pack_rsp_data(
+                                CMD_RSP_CONNECT, req_id, RSP_STATE_CONNECTED)
+                            data_to_send = encrypt.encrypt_all(
+                                self._password, self._method, 1, rsp_data)
                             self.write_to_server_socket(data_to_send, r_addr)
                     elif data[0] == CMD_CONNECT_REMOTE:
                         if len(data[2]) > 4 and data[1] in self._reqid_to_hd:
                             # create
                             if type(self._reqid_to_hd[data[1]]) is tuple:
-                                if data[2][0:4] == self._reqid_to_hd[data[1]][0]:
-                                    handle = TCPRelayHandler(self, self._reqid_to_hd, self._fd_to_handlers,
-                                        self._eventloop, self._server_socket,
-                                        self._reqid_to_hd[data[1]][0], self._reqid_to_hd[data[1]][1],
-                                        self._config, self._dns_resolver, self._is_local)
+                                if data[2][0:4] == self._reqid_to_hd[data[1]][
+                                    0]:
+                                    handle = TCPRelayHandler(
+                                        self, self._reqid_to_hd,
+                                        self._fd_to_handlers, self._eventloop,
+                                        self._server_socket,
+                                        self._reqid_to_hd[data[1]][0],
+                                        self._reqid_to_hd[data[1]][1],
+                                        self._config, self._dns_resolver,
+                                        self._is_local)
                                     self._reqid_to_hd[data[1]] = handle
-                                    handle.handle_client(r_addr, CMD_CONNECT, data[1], data[2])
+                                    handle.handle_client(r_addr, CMD_CONNECT,
+                                                         data[1], data[2])
                                     handle.handle_client(r_addr, *data)
                                     self.update_activity(handle)
                                 else:
                                     # disconnect
-                                    rsp_data = self._pack_rsp_data(CMD_DISCONNECT, data[1], RSP_STATE_EMPTY)
-                                    data_to_send = encrypt.encrypt_all(self._password, self._method, 1, rsp_data)
-                                    self.write_to_server_socket(data_to_send, r_addr)
+                                    rsp_data = self._pack_rsp_data(
+                                        CMD_DISCONNECT, data[1],
+                                        RSP_STATE_EMPTY)
+                                    data_to_send = encrypt.encrypt_all(
+                                        self._password, self._method, 1,
+                                        rsp_data)
+                                    self.write_to_server_socket(data_to_send,
+                                                                r_addr)
                             else:
-                                self.update_activity(self._reqid_to_hd[data[1]])
-                                self._reqid_to_hd[data[1]].handle_client(r_addr, *data)
+                                self.update_activity(self._reqid_to_hd[data[
+                                    1]])
+                                self._reqid_to_hd[data[1]].handle_client(
+                                    r_addr, *data)
                         else:
                             # disconnect
-                            rsp_data = self._pack_rsp_data(CMD_DISCONNECT, data[1], RSP_STATE_EMPTY)
-                            data_to_send = encrypt.encrypt_all(self._password, self._method, 1, rsp_data)
+                            rsp_data = self._pack_rsp_data(
+                                CMD_DISCONNECT, data[1], RSP_STATE_EMPTY)
+                            data_to_send = encrypt.encrypt_all(
+                                self._password, self._method, 1, rsp_data)
                             self.write_to_server_socket(data_to_send, r_addr)
-                    elif data[0] > CMD_CONNECT_REMOTE and data[0] <= CMD_DISCONNECT:
+                    elif data[0] > CMD_CONNECT_REMOTE and data[
+                        0] <= CMD_DISCONNECT:
                         if data[1] in self._reqid_to_hd:
                             if type(self._reqid_to_hd[data[1]]) is tuple:
                                 pass
                             else:
-                                self.update_activity(self._reqid_to_hd[data[1]])
-                                self._reqid_to_hd[data[1]].handle_client(r_addr, *data)
+                                self.update_activity(self._reqid_to_hd[data[
+                                    1]])
+                                self._reqid_to_hd[data[1]].handle_client(
+                                    r_addr, *data)
                         else:
                             # disconnect
-                            rsp_data = self._pack_rsp_data(CMD_DISCONNECT, data[1], RSP_STATE_EMPTY)
-                            data_to_send = encrypt.encrypt_all(self._password, self._method, 1, rsp_data)
+                            rsp_data = self._pack_rsp_data(
+                                CMD_DISCONNECT, data[1], RSP_STATE_EMPTY)
+                            data_to_send = encrypt.encrypt_all(
+                                self._password, self._method, 1, rsp_data)
                             self.write_to_server_socket(data_to_send, r_addr)
                     return
                 except Exception as e:
@@ -1095,11 +1157,12 @@ class UDPRelay(object):
             self._sockets.add(client.fileno())
             self._eventloop.add(client, eventloop.POLL_IN, self)
 
-            logging.debug('UDP port %5d sockets %d' % (self._listen_port, len(self._sockets)))
+            logging.debug('UDP port %5d sockets %d' %
+                          (self._listen_port, len(self._sockets)))
 
             logging.info('UDP data to %s:%d from %s:%d' %
-                        (common.to_str(server_addr), server_port,
-                            r_addr[0], r_addr[1]))
+                         (common.to_str(server_addr), server_port, r_addr[0],
+                          r_addr[1]))
 
         if self._is_local:
             data = encrypt.encrypt_all(self._password, self._method, 1, data)
@@ -1137,8 +1200,7 @@ class UDPRelay(object):
             if not response:
                 return
         else:
-            data = encrypt.encrypt_all(self._password, self._method, 0,
-                                       data)
+            data = encrypt.encrypt_all(self._password, self._method, 0, data)
             if not data:
                 return
             header_result = parse_header(data)
@@ -1195,8 +1257,8 @@ class UDPRelay(object):
         self._eventloop = loop
 
         server_socket = self._server_socket
-        self._eventloop.add(server_socket,
-                            eventloop.POLL_IN | eventloop.POLL_ERR, self)
+        self._eventloop.add(server_socket, eventloop.POLL_IN
+                            | eventloop.POLL_ERR, self)
         loop.add_periodic(self.handle_periodic)
 
     def remove_handler(self, handler):
@@ -1295,7 +1357,8 @@ class UDPRelay(object):
         self._cache.sweep()
         self._dns_cache.sweep()
         if before_sweep_size != len(self._sockets):
-            logging.debug('UDP port %5d sockets %d' % (self._listen_port, len(self._sockets)))
+            logging.debug('UDP port %5d sockets %d' %
+                          (self._listen_port, len(self._sockets)))
         self._client_fd_to_server_addr.sweep()
         self._sweep_timeout()
 

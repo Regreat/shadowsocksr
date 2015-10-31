@@ -22,7 +22,6 @@ import collections
 import logging
 import time
 
-
 # this LRUCache is optimized for concurrency, not QPS
 # n: concurrency, keys stored in the cache
 # m: visits not timed out, proportional to QPS * timeout
@@ -145,6 +144,7 @@ def test():
     c['s']
     time.sleep(0.3)
     c.sweep()
+
 
 if __name__ == '__main__':
     test()

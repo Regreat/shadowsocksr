@@ -34,9 +34,8 @@ buf_size = 2048
 def load_openssl():
     global loaded, libcrypto, buf
 
-    libcrypto = util.find_library(('crypto', 'eay32'),
-                                  'EVP_get_cipherbyname',
-                                  'libcrypto')
+    libcrypto = util.find_library(
+        ('crypto', 'eay32'), 'EVP_get_cipherbyname', 'libcrypto')
     if libcrypto is None:
         raise Exception('libcrypto(OpenSSL) not found')
 
@@ -85,8 +84,8 @@ class OpenSSLCrypto(object):
         self._ctx = libcrypto.EVP_CIPHER_CTX_new()
         if not self._ctx:
             raise Exception('can not create cipher context')
-        r = libcrypto.EVP_CipherInit_ex(self._ctx, cipher, None,
-                                        key_ptr, iv_ptr, c_int(op))
+        r = libcrypto.EVP_CipherInit_ex(self._ctx, cipher, None, key_ptr,
+                                        iv_ptr, c_int(op))
         if not r:
             self.clean()
             raise Exception('can not initialize cipher context')

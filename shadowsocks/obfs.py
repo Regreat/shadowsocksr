@@ -17,23 +17,18 @@
 from __future__ import absolute_import, division, print_function, \
     with_statement
 
-import os
-import sys
-import hashlib
-import logging
-
-from shadowsocks import common
 from shadowsocks.obfsplugin import plain, http_simple, verify_simple
-
 
 method_supported = {}
 method_supported.update(plain.obfs_map)
 method_supported.update(http_simple.obfs_map)
 method_supported.update(verify_simple.obfs_map)
 
+
 class server_info(object):
     def __init__(self, data):
         self.data = data
+
 
 class obfs(object):
     def __init__(self, method):
@@ -82,4 +77,3 @@ class obfs(object):
 
     def server_post_decrypt(self, buf):
         return self.obfs.server_post_decrypt(buf)
-

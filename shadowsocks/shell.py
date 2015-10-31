@@ -23,9 +23,9 @@ import json
 import sys
 import getopt
 import logging
+
 from shadowsocks.common import to_bytes, to_str, IPNetwork
 from shadowsocks import encrypt
-
 
 VERBOSE_LEVEL = 5
 

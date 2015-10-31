@@ -30,7 +30,10 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='See README')
-    parser.add_argument('-c', '--count', default=3, type=int,
+    parser.add_argument('-c',
+                        '--count',
+                        default=3,
+                        type=int,
                         help='with how many failure times it should be '
                              'considered as an attack')
     config = parser.parse_args()

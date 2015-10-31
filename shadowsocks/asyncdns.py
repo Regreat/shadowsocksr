@@ -27,12 +27,13 @@ import logging
 if __name__ == '__main__':
     import sys
     import inspect
-    file_path = os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe())))
+
+    file_path = os.path.dirname(os.path.realpath(inspect.getfile(
+        inspect.currentframe())))
     os.chdir(file_path)
     sys.path.insert(0, os.path.join(file_path, '../'))
 
 from shadowsocks import common, lru_cache, eventloop, shell
-
 
 CACHE_SWEEP_INTERVAL = 30
 
@@ -78,17 +79,22 @@ QTYPE_CNAME = 5
 QTYPE_NS = 2
 QCLASS_IN = 1
 
+
 def detect_ipv6_supprot():
     if 'has_ipv6' in dir(socket):
         s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
         try:
             s.connect(('ipv6.google.com', 0))
+            print('IPv6 support')
             return True
         except:
             pass
+    print('IPv6 not support')
     return False
 
+
 IPV6_CONNECTION_SUPPORT = detect_ipv6_supprot()
+
 
 def build_address(address):
     address = address.strip(b'.')
@@ -170,15 +176,13 @@ def parse_record(data, offset, question=False):
     nlen, name = parse_name(data, offset)
     if not question:
         record_type, record_class, record_ttl, record_rdlength = struct.unpack(
-            '!HHiH', data[offset + nlen:offset + nlen + 10]
-        )
+            '!HHiH', data[offset + nlen:offset + nlen + 10])
         ip = parse_ip(record_type, data, record_rdlength, offset + nlen + 10)
         return nlen + 10 + record_rdlength, \
             (name, ip, record_type, record_class, record_ttl)
     else:
         record_type, record_class = struct.unpack(
-            '!HH', data[offset + nlen:offset + nlen + 4]
-        )
+            '!HH', data[offset + nlen:offset + nlen + 4])
         return nlen + 4, (name, None, record_type, record_class, None, None)
 
 
@@ -265,7 +269,6 @@ STATUS_IPV6 = 1
 
 
 class DNSResolver(object):
-
     def __init__(self):
         self._loop = None
         self._hosts = {}
@@ -339,8 +342,9 @@ class DNSResolver(object):
             if ip or error:
                 callback((hostname, ip), error)
             else:
-                callback((hostname, None),
-                         Exception('unknown hostname %s' % hostname))
+                callback(
+                    (hostname, None),
+                    Exception('unknown hostname %s' % hostname))
         if hostname in self._hostname_to_cb:
             del self._hostname_to_cb[hostname]
         if hostname in self._hostname_status:
@@ -356,19 +360,36 @@ class DNSResolver(object):
                         answer[2] == QCLASS_IN:
                     ip = answer[0]
                     break
-            if not ip and self._hostname_status.get(hostname, STATUS_IPV4) \
-                    == STATUS_IPV6:
-                self._hostname_status[hostname] = STATUS_IPV4
-                self._send_req(hostname, QTYPE_A)
+            if IPV6_CONNECTION_SUPPORT:
+                if not ip and self._hostname_status.get(hostname, STATUS_IPV4) \
+                        == STATUS_IPV6:
+                    self._hostname_status[hostname] = STATUS_IPV4
+                    self._send_req(hostname, QTYPE_A)
+                else:
+                    if ip:
+                        self._cache[hostname] = ip
+                        self._call_callback(hostname, ip)
+                    elif self._hostname_status.get(hostname,
+                                                   None) == STATUS_IPV4:
+                        for question in response.questions:
+                            if question[1] == QTYPE_A:
+                                self._call_callback(hostname, None)
+                                break
             else:
-                if ip:
-                    self._cache[hostname] = ip
-                    self._call_callback(hostname, ip)
-                elif self._hostname_status.get(hostname, None) == STATUS_IPV4:
-                    for question in response.questions:
-                        if question[1] == QTYPE_A:
-                            self._call_callback(hostname, None)
-                            break
+                if not ip and self._hostname_status.get(hostname, STATUS_IPV6) \
+                        == STATUS_IPV4:
+                    self._hostname_status[hostname] = STATUS_IPV6
+                    self._send_req(hostname, QTYPE_AAAA)
+                else:
+                    if ip:
+                        self._cache[hostname] = ip
+                        self._call_callback(hostname, ip)
+                    elif self._hostname_status.get(hostname,
+                                                   None) == STATUS_IPV6:
+                        for question in response.questions:
+                            if question[1] == QTYPE_AAAA:
+                                self._call_callback(hostname, None)
+                                break
 
     def handle_event(self, sock, fd, event):
         if sock != self._sock:
@@ -476,10 +497,11 @@ def test():
             if counter == 9:
                 dns_resolver.close()
                 loop.stop()
+
         a_callback = callback
         return a_callback
 
-    assert(make_callback() != make_callback())
+    assert (make_callback() != make_callback())
 
     dns_resolver.resolve(b'google.com', make_callback())
     dns_resolver.resolve('google.com', make_callback())
@@ -504,4 +526,3 @@ def test():
 
 if __name__ == '__main__':
     test()
-

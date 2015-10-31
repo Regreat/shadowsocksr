@@ -27,13 +27,11 @@ import collections
 
 from shadowsocks import common, eventloop, tcprelay, udprelay, asyncdns, shell
 
-
 BUF_SIZE = 1506
 STAT_SEND_LIMIT = 50
 
 
 class Manager(object):
-
     def __init__(self, config):
         self._config = config
         self._relays = {}  # (tcprelay, udprelay)
@@ -57,16 +55,14 @@ class Manager(object):
             else:
                 addr = manager_address
                 family = socket.AF_UNIX
-            self._control_socket = socket.socket(family,
-                                                 socket.SOCK_DGRAM)
+            self._control_socket = socket.socket(family, socket.SOCK_DGRAM)
             self._control_socket.bind(addr)
             self._control_socket.setblocking(False)
         except (OSError, IOError) as e:
             logging.error(e)
             logging.error('can not bind to manager address')
             exit(1)
-        self._loop.add(self._control_socket,
-                       eventloop.POLL_IN, self)
+        self._loop.add(self._control_socket, eventloop.POLL_IN, self)
         self._loop.add_periodic(self.handle_periodic)
 
         port_password = config['port_password']
@@ -168,7 +164,7 @@ class Manager(object):
                 send_data(r)
                 r.clear()
                 i = 0
-        if len(r) > 0 :
+        if len(r) > 0:
             send_data(r)
         self._statistics.clear()
 
@@ -268,8 +264,7 @@ def test():
 
     # test statistics for UDP
     header = common.pack_addr(b'127.0.0.1') + struct.pack('>H', 80)
-    data = encrypt.encrypt_all(b'foobar2', 'aes-256-cfb', 1,
-                               header + b'test')
+    data = encrypt.encrypt_all(b'foobar2', 'aes-256-cfb', 1, header + b'test')
     udp_cli = socket.socket(type=socket.SOCK_DGRAM)
     udp_cli.sendto(data, ('127.0.0.1', 8382))
     tcp_cli.close()

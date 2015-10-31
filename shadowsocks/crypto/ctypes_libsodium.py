@@ -52,15 +52,11 @@ def load_libsodium():
     libsodium = CDLL(libsodium_path)
     libsodium.sodium_init.restype = c_int
     libsodium.crypto_stream_salsa20_xor_ic.restype = c_int
-    libsodium.crypto_stream_salsa20_xor_ic.argtypes = (c_void_p, c_char_p,
-                                                       c_ulonglong,
-                                                       c_char_p, c_ulonglong,
-                                                       c_char_p)
+    libsodium.crypto_stream_salsa20_xor_ic.argtypes = (
+        c_void_p, c_char_p, c_ulonglong, c_char_p, c_ulonglong, c_char_p)
     libsodium.crypto_stream_chacha20_xor_ic.restype = c_int
-    libsodium.crypto_stream_chacha20_xor_ic.argtypes = (c_void_p, c_char_p,
-                                                        c_ulonglong,
-                                                        c_char_p, c_ulonglong,
-                                                        c_char_p)
+    libsodium.crypto_stream_chacha20_xor_ic.argtypes = (
+        c_void_p, c_char_p, c_ulonglong, c_char_p, c_ulonglong, c_char_p)
 
     libsodium.sodium_init()
 
@@ -98,8 +94,9 @@ class Salsa20Crypto(object):
 
         if padding:
             data = (b'\0' * padding) + data
-        self.cipher(byref(buf), c_char_p(data), padding + l,
-                    self.iv_ptr, int(self.counter / BLOCK_SIZE), self.key_ptr)
+        self.cipher(
+            byref(buf), c_char_p(data), padding + l, self.iv_ptr,
+            int(self.counter / BLOCK_SIZE), self.key_ptr)
         self.counter += l
         # buf is copied to a str object when we access buf.raw
         # strip off the padding

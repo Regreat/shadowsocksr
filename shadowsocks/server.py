@@ -25,7 +25,9 @@ import signal
 
 if __name__ == '__main__':
     import inspect
-    file_path = os.path.dirname(os.path.realpath(inspect.getfile(inspect.currentframe())))
+
+    file_path = os.path.dirname(os.path.realpath(inspect.getfile(
+        inspect.currentframe())))
     sys.path.insert(0, os.path.join(file_path, '../'))
 
 from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, \
@@ -75,11 +77,14 @@ def main():
             obfs = config["obfs"]
         a_config = config.copy()
         ipv6_ok = False
-        logging.info("server start with password [%s] method [%s] obfs [%s] obfs_param [%s]" %
-                (password, a_config['method'], obfs, a_config['obfs_param']))
+        logging.info(
+            "server start with password [%s] method [%s] obfs [%s] obfs_param [%s]"
+            % (password, a_config['method'], obfs, a_config['obfs_param']))
         if 'server_ipv6' in a_config:
             try:
-                if len(a_config['server_ipv6']) > 2 and a_config['server_ipv6'][0] == "[" and a_config['server_ipv6'][-1] == "]":
+                if len(a_config['server_ipv6']) > 2 and a_config[
+                    'server_ipv6'][0] == "[" and a_config['server_ipv6'][
+                    -1] == "]":
                     a_config['server_ipv6'] = a_config['server_ipv6'][1:-1]
                 a_config['server_port'] = int(port)
                 a_config['password'] = password
@@ -87,8 +92,10 @@ def main():
                 a_config['server'] = a_config['server_ipv6']
                 logging.info("starting server at [%s]:%d" %
                              (a_config['server'], int(port)))
-                tcp_servers.append(tcprelay.TCPRelay(a_config, dns_resolver, False))
-                udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver, False))
+                tcp_servers.append(tcprelay.TCPRelay(a_config, dns_resolver,
+                                                     False))
+                udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver,
+                                                     False))
                 if a_config['server_ipv6'] == b"::":
                     ipv6_ok = True
             except Exception as e:
@@ -101,8 +108,10 @@ def main():
             a_config['obfs'] = obfs
             logging.info("starting server at %s:%d" %
                          (a_config['server'], int(port)))
-            tcp_servers.append(tcprelay.TCPRelay(a_config, dns_resolver, False))
-            udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver, False))
+            tcp_servers.append(tcprelay.TCPRelay(a_config, dns_resolver,
+                                                 False))
+            udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver,
+                                                 False))
         except Exception as e:
             if not ipv6_ok:
                 shell.print_exception(e)
@@ -112,11 +121,13 @@ def main():
             logging.warn('received SIGQUIT, doing graceful shutting down..')
             list(map(lambda s: s.close(next_tick=True),
                      tcp_servers + udp_servers))
-        signal.signal(getattr(signal, 'SIGQUIT', signal.SIGTERM),
-                      child_handler)
+
+        signal.signal(
+            getattr(signal, 'SIGQUIT', signal.SIGTERM), child_handler)
 
         def int_handler(signum, _):
             sys.exit(1)
+
         signal.signal(signal.SIGINT, int_handler)
 
         try:
@@ -144,6 +155,7 @@ def main():
                 else:
                     children.append(r)
             if not is_child:
+
                 def handler(signum, _):
                     for pid in children:
                         try:
@@ -152,6 +164,7 @@ def main():
                         except OSError:  # child may already exited
                             pass
                     sys.exit()
+
                 signal.signal(signal.SIGTERM, handler)
                 signal.signal(signal.SIGQUIT, handler)
                 signal.signal(signal.SIGINT, handler)

@@ -21,7 +21,6 @@ import string
 import struct
 import hashlib
 
-
 __all__ = ['ciphers']
 
 cached_tables = {}
@@ -40,7 +39,7 @@ def get_table(key):
     s = m.digest()
     a, b = struct.unpack('<QQ', s)
     table = maketrans(b'', b'')
-    table = [table[i: i + 1] for i in range(len(table))]
+    table = [table[i:i + 1] for i in range(len(table))]
     for i in range(1, 1024):
         table.sort(key=lambda x: int(a % (ord(x) + i)))
     return table
@@ -66,9 +65,7 @@ class TableCipher(object):
             return translate(data, self._decrypt_table)
 
 
-ciphers = {
-    'table': (0, 0, TableCipher)
-}
+ciphers = {'table': (0, 0, TableCipher)}
 
 
 def test_table_result():
@@ -107,7 +104,8 @@ def test_table_result():
          117, 57, 92, 104, 157, 170, 214, 81, 60, 133, 208, 246, 172, 23, 167,
          160, 192, 76, 161, 237, 45, 4, 58, 10, 182, 65, 202, 240, 185, 241,
          79, 224, 132, 51, 42, 126, 105, 37, 250, 149, 32, 243, 231, 67, 179,
-         48, 9, 106, 216, 31, 249, 19, 85, 254, 156, 115, 255, 120, 75, 16]]
+         48, 9, 106, 216, 31, 249, 19, 85, 254, 156, 115, 255, 120, 75, 16]
+    ]
 
     target2 = [
         [124, 30, 170, 247, 27, 127, 224, 59, 13, 22, 196, 76, 72, 154, 32,
@@ -143,7 +141,8 @@ def test_table_result():
          231, 79, 149, 74, 62, 50, 148, 143, 206, 28, 15, 57, 159, 139, 225,
          122, 237, 138, 171, 36, 56, 115, 63, 144, 154, 6, 230, 133, 215, 41,
          184, 22, 104, 254, 234, 253, 187, 226, 247, 188, 156, 151, 40, 108,
-         51, 83, 178, 52, 3, 31, 255, 195, 53, 235, 126, 167, 120]]
+         51, 83, 178, 52, 3, 31, 255, 195, 53, 235, 126, 167, 120]
+    ]
 
     encrypt_table = b''.join(get_table(b'foobar!'))
     decrypt_table = maketrans(encrypt_table, maketrans(b'', b''))

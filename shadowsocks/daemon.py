@@ -23,7 +23,9 @@ import sys
 import logging
 import signal
 import time
+
 from shadowsocks import common, shell
+
 
 # this module is ported from ShadowVPN daemon.c
 
@@ -55,8 +57,8 @@ def write_pid_file(pid_file, pid):
     import stat
 
     try:
-        fd = os.open(pid_file, os.O_RDWR | os.O_CREAT,
-                     stat.S_IRUSR | stat.S_IWUSR)
+        fd = os.open(pid_file, os.O_RDWR | os.O_CREAT, stat.S_IRUSR
+                     | stat.S_IWUSR)
     except OSError as e:
         shell.print_exception(e)
         return -1
@@ -91,7 +93,6 @@ def freopen(f, mode, stream):
 
 
 def daemon_start(pid_file, log_file):
-
     def handle_exit(signum, _):
         if signum == signal.SIGTERM:
             sys.exit(0)
@@ -199,7 +200,7 @@ def set_user(username):
         logging.error('can not set user as nonroot user')
         # will raise later
 
-    # inspired by supervisor
+        # inspired by supervisor
     if hasattr(os, 'setgroups'):
         groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
         groups.insert(0, gid)

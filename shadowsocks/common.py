@@ -23,6 +23,7 @@ import struct
 import logging
 import binascii
 
+
 def compat_ord(s):
     if type(s) == int:
         return s
@@ -54,6 +55,7 @@ def to_str(s):
             return s.decode('utf-8')
     return s
 
+
 def int32(x):
     if x > 0xFFFFFFFF or x < 0:
         x &= 0xFFFFFFFF
@@ -64,6 +66,7 @@ def int32(x):
         else:
             return -2147483648
     return x
+
 
 def inet_ntop(family, ipstr):
     if family == socket.AF_INET:
@@ -127,7 +130,6 @@ def patch_socket():
 
 patch_socket()
 
-
 ADDRTYPE_IPV4 = 1
 ADDRTYPE_IPV6 = 4
 ADDRTYPE_HOST = 3
@@ -147,6 +149,7 @@ def pack_addr(address):
     if len(address) > 255:
         address = address[:255]  # TODO
     return b'\x03' + chr(len(address)) + address
+
 
 def pre_parse_header(data):
     datatype = ord(data[0])
@@ -187,6 +190,7 @@ def pre_parse_header(data):
             data += ogn_data[data_size:]
     return data
 
+
 def parse_header(data):
     addrtype = ord(data[0])
     dest_addr = None
@@ -206,8 +210,8 @@ def parse_header(data):
             addrlen = ord(data[1])
             if len(data) >= 2 + addrlen:
                 dest_addr = data[2:2 + addrlen]
-                dest_port = struct.unpack('>H', data[2 + addrlen:4 +
-                                                     addrlen])[0]
+                dest_port = struct.unpack('>H',
+                                          data[2 + addrlen:4 + addrlen])[0]
                 header_length = 4 + addrlen
             else:
                 logging.warn('header is too short')

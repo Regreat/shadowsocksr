@@ -31,7 +31,6 @@ from collections import defaultdict
 
 from shadowsocks import shell
 
-
 __all__ = ['EventLoop', 'POLL_NULL', 'POLL_IN', 'POLL_OUT', 'POLL_ERR',
            'POLL_HUP', 'POLL_NVAL', 'EVENT_NAMES']
 
@@ -41,7 +40,6 @@ POLL_OUT = 0x04
 POLL_ERR = 0x08
 POLL_HUP = 0x10
 POLL_NVAL = 0x20
-
 
 EVENT_NAMES = {
     POLL_NULL: 'POLL_NULL',
@@ -103,7 +101,6 @@ class KqueueLoop(object):
 
 
 class SelectLoop(object):
-
     def __init__(self):
         self._r_list = set()
         self._w_list = set()

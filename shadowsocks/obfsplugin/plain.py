@@ -17,17 +17,13 @@
 from __future__ import absolute_import, division, print_function, \
     with_statement
 
-import os
-import sys
-import hashlib
-import logging
 
 def create_obfs(method):
     return plain(method)
 
-obfs_map = {
-        'plain': (create_obfs,),
-}
+
+obfs_map = {'plain': (create_obfs,), }
+
 
 class plain(object):
     def __init__(self, method):
@@ -65,4 +61,3 @@ class plain(object):
 
     def server_post_decrypt(self, buf):
         return buf
-
