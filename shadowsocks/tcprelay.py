@@ -30,7 +30,6 @@ import random
 from shadowsocks import encrypt, obfs, eventloop, shell, common
 from shadowsocks.common import pre_parse_header, parse_header
 
-
 # set it 'True' if run as a local client and connect to a server which support new protocol
 CLIENT_NEW_PROTOCOL = False  # deprecated
 
@@ -223,12 +222,12 @@ class TCPRelayHandler(object):
 
                     data = self._udp_data_send_buffer[:length]
                     self._udp_data_send_buffer = self._udp_data_send_buffer[
-                                                 length:]
+                        length:]
 
                     frag = common.ord(data[2])
                     if frag != 0:
                         logging.warn('drop a message since frag is %d' %
-                                     (frag,))
+                                     (frag, ))
                         continue
                     else:
                         data = data[3:]
@@ -325,13 +324,14 @@ class TCPRelayHandler(object):
             addr = struct.unpack('>I', address_bytes)[0]
         else:
             addr = 0
-        return host_list[(
-                             (hash_code & 0xffffffff) + addr + 3) % len(host_list)]
+        return host_list[((hash_code & 0xffffffff) + addr + 3) %
+                         len(host_list)]
 
     def _handel_protocol_error(self, client_address, ogn_data):
         #raise Exception('can not parse header')
-        logging.warn("Protocol ERROR, TCP ogn data %s from %s:%d" % (
-            binascii.hexlify(ogn_data), client_address[0], client_address[1]))
+        logging.warn("Protocol ERROR, TCP ogn data %s from %s:%d" %
+                     (binascii.hexlify(ogn_data), client_address[0],
+                      client_address[1]))
         self._encrypt_correct = False
         #create redirect or disconnect by hash code
         host, port = self._get_redirect_host(client_address, ogn_data)
@@ -408,7 +408,6 @@ class TCPRelayHandler(object):
                     self.destroy()
                     return
 
-            before_parse_data = data
             if self._is_local:
                 header_result = parse_header(data)
             else:
@@ -489,14 +488,14 @@ class TCPRelayHandler(object):
             remote_sock_v6 = socket.socket(af, socktype, proto)
             self._remote_sock_v6 = remote_sock_v6
             self._fd_to_handlers[remote_sock_v6.fileno()] = self
-            remote_sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 *
-                                   32)
-            remote_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 *
-                                   32)
-            remote_sock_v6.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024
-                                      * 32)
-            remote_sock_v6.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024
-                                      * 32)
+            remote_sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF,
+                                   1024 * 32)
+            remote_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF,
+                                   1024 * 32)
+            remote_sock_v6.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF,
+                                      1024 * 32)
+            remote_sock_v6.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF,
+                                      1024 * 32)
 
         remote_sock.setblocking(False)
         if self._remote_udp:
@@ -755,7 +754,7 @@ class TCPRelayHandler(object):
             logging.debug('destroying remote')
             try:
                 self._loop.remove(self._remote_sock)
-            except Exception as e:
+            except Exception:
                 pass
             del self._fd_to_handlers[self._remote_sock.fileno()]
             self._remote_sock.close()
@@ -764,7 +763,7 @@ class TCPRelayHandler(object):
             logging.debug('destroying remote')
             try:
                 self._loop.remove(self._remote_sock_v6)
-            except Exception as e:
+            except Exception:
                 pass
             del self._fd_to_handlers[self._remote_sock_v6.fileno()]
             self._remote_sock_v6.close()
@@ -848,7 +847,7 @@ class TCPRelay(object):
         self.server_connections += val
         logging.debug('server port %5d connections = %d' %
                       (self._listen_port,
-                       self.server_connections,))
+                       self.server_connections, ))
 
     def update_activity(self, handler, data_len):
         if data_len and self._stat_callback:

@@ -47,14 +47,14 @@ def create_random_head_obfs(method):
 
 
 obfs_map = {
-    'http_simple': (create_http_obfs,),
-    'http_simple_compatible': (create_http_obfs,),
-    'http2_simple': (create_http2_obfs,),
-    'http2_simple_compatible': (create_http2_obfs,),
-    'tls_simple': (create_tls_obfs,),
-    'tls_simple_compatible': (create_tls_obfs,),
-    'random_head': (create_random_head_obfs,),
-    'random_head_compatible': (create_random_head_obfs,),
+    'http_simple': (create_http_obfs, ),
+    'http_simple_compatible': (create_http_obfs, ),
+    'http2_simple': (create_http2_obfs, ),
+    'http2_simple_compatible': (create_http2_obfs, ),
+    'tls_simple': (create_tls_obfs, ),
+    'tls_simple_compatible': (create_tls_obfs, ),
+    'random_head': (create_random_head_obfs, ),
+    'random_head_compatible': (create_random_head_obfs, ),
 }
 
 

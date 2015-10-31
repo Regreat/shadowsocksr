@@ -35,7 +35,7 @@ if __name__ == '__main__':
                         default=3,
                         type=int,
                         help='with how many failure times it should be '
-                             'considered as an attack')
+                        'considered as an attack')
     config = parser.parse_args()
     ips = {}
     banned = set()

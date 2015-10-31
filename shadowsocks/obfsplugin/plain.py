@@ -22,7 +22,7 @@ def create_obfs(method):
     return plain(method)
 
 
-obfs_map = {'plain': (create_obfs,), }
+obfs_map = {'plain': (create_obfs, ), }
 
 
 class plain(object):

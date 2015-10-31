@@ -26,7 +26,6 @@ import time
 
 from shadowsocks import common, shell
 
-
 # this module is ported from ShadowVPN daemon.c
 
 

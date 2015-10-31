@@ -74,7 +74,6 @@ import traceback
 from shadowsocks import encrypt, eventloop, lru_cache, common, shell
 from shadowsocks.common import pre_parse_header, parse_header, pack_addr
 
-
 # we clear at most TIMEOUTS_CLEAN_SIZE timeouts each time
 TIMEOUTS_CLEAN_SIZE = 512
 
@@ -379,7 +378,6 @@ class TCPRelayHandler(object):
             return False
 
         uncomplete = False
-        retry = 0
         if sock == self._local_sock:
             data = encrypt.encrypt_all(self._password, self._method, 1, data)
             if addr is None:
@@ -548,7 +546,7 @@ class TCPRelayHandler(object):
                     split_pos = beg_pos + self._random_mtu_size[
                         self._random_mtu_index]
                     self._random_mtu_index = (
-                                                 self._random_mtu_index + 1) & 0x3ff
+                        self._random_mtu_index + 1) & 0x3ff
                     #split_pos = beg_pos + random.randint(POST_MTU_MIN, POST_MTU_MAX)
                 data = recv_data[beg_pos:split_pos]
                 beg_pos = split_pos
@@ -613,7 +611,7 @@ class TCPRelayHandler(object):
             return b"\x81" + data
         elif length < 256:
             return b"\x80" + common.chr(length) + self._rand_data[:length -
-                                                                   2] + data
+                                                                  2] + data
         else:
             return b"\x82" + struct.pack(
                 ">H", length) + self._rand_data[:length - 3] + data
@@ -623,7 +621,7 @@ class TCPRelayHandler(object):
         recv_id = self._recvqueue.get_begin_id()
         rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str,
                              struct.pack(">I", recv_id), struct.pack(
-                ">I", pack_id), data, reqid_str])
+                                 ">I", pack_id), data, reqid_str])
         return rsp_data
 
     def _pack_post_data_64(self, cmd, send_id, pack_id, data):
@@ -631,7 +629,7 @@ class TCPRelayHandler(object):
         recv_id = self._recvqueue.get_begin_id()
         rsp_data = b''.join([CMD_VER_STR, common.chr(cmd), reqid_str,
                              struct.pack(">Q", recv_id), struct.pack(
-                ">Q", pack_id), data, reqid_str])
+                                 ">Q", pack_id), data, reqid_str])
         return rsp_data
 
     def sweep_timeout(self):
@@ -939,10 +937,10 @@ class UDPRelay(object):
         server_socket = socket.socket(af, socktype, proto)
         server_socket.bind((self._listen_addr, self._listen_port))
         server_socket.setblocking(False)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 *
-                                 32)
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 *
-                                 32)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF,
+                                 1024 * 32)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF,
+                                 1024 * 32)
         self._server_socket = server_socket
         self._stat_callback = stat_callback
 
@@ -1045,7 +1043,7 @@ class UDPRelay(object):
                                 for i in range(64):
                                     req_id = random.randint(1, 65535)
                                     if type(self._reqid_to_hd[
-                                                req_id]) is tuple:
+                                            req_id]) is tuple:
                                         break
                             # return req id
                             self._reqid_to_hd[req_id] = (data[2][0:4], None)
@@ -1059,7 +1057,7 @@ class UDPRelay(object):
                             # create
                             if type(self._reqid_to_hd[data[1]]) is tuple:
                                 if data[2][0:4] == self._reqid_to_hd[data[1]][
-                                    0]:
+                                        0]:
                                     handle = TCPRelayHandler(
                                         self, self._reqid_to_hd,
                                         self._fd_to_handlers, self._eventloop,
@@ -1096,7 +1094,7 @@ class UDPRelay(object):
                                 self._password, self._method, 1, rsp_data)
                             self.write_to_server_socket(data_to_send, r_addr)
                     elif data[0] > CMD_CONNECT_REMOTE and data[
-                        0] <= CMD_DISCONNECT:
+                            0] <= CMD_DISCONNECT:
                         if data[1] in self._reqid_to_hd:
                             if type(self._reqid_to_hd[data[1]]) is tuple:
                                 pass
@@ -1221,8 +1219,6 @@ class UDPRelay(object):
     def write_to_server_socket(self, data, addr):
         #self._server_socket.sendto(data, addr)
         #'''
-        uncomplete = False
-        retry = 0
         try:
             #"""
             #if self._data_to_write_to_server_socket:
@@ -1239,8 +1235,7 @@ class UDPRelay(object):
             #"""
         except (OSError, IOError) as e:
             error_no = eventloop.errno_from_exception(e)
-            uncomplete = True
-            if error_no in (errno.EWOULDBLOCK,):
+            if error_no in (errno.EWOULDBLOCK, ):
                 pass
             else:
                 shell.print_exception(e)

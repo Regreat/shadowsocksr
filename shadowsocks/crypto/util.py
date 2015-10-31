@@ -125,7 +125,7 @@ def run_cipher(cipher, decipher):
 def test_find_library():
     assert find_library('c', 'strcpy', 'libc') is not None
     assert find_library(['c'], 'strcpy', 'libc') is not None
-    assert find_library(('c',), 'strcpy', 'libc') is not None
+    assert find_library(('c', ), 'strcpy', 'libc') is not None
     assert find_library(
         ('crypto', 'eay32'), 'EVP_CipherUpdate', 'libcrypto') is not None
     assert find_library('notexist', 'strcpy', 'libnotexist') is None

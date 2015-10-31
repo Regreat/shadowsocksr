@@ -44,9 +44,9 @@ def create_auth_obfs(method):
 
 
 obfs_map = {
-    'verify_simple': (create_verify_obfs,),
-    'verify_deflate': (create_verify_deflate,),
-    'auth_simple': (create_auth_obfs,),
+    'verify_simple': (create_verify_obfs, ),
+    'verify_deflate': (create_verify_deflate, ),
+    'auth_simple': (create_auth_obfs, ),
 }
 
 
@@ -370,7 +370,7 @@ class obfs_auth_data(object):
     def insert(self, client_id, connection_id):
         max_client = 16
         if client_id not in self.client_id or not self.client_id[
-            client_id].enable:
+                client_id].enable:
             active = 0
             for c_id in self.client_id:
                 if self.client_id[c_id].is_active():
@@ -389,7 +389,7 @@ class obfs_auth_data(object):
             random.shuffle(keys)
             for c_id in keys:
                 if not self.client_id[c_id].is_active() and self.client_id[
-                    c_id].enable:
+                        c_id].enable:
                     if len(self.client_id) >= 256:
                         del self.client_id[c_id]
                     else:
@@ -437,13 +437,13 @@ class auth_simple(verify_base):
         if not self.server_info.data.local_client_id:
             self.server_info.data.local_client_id = os.urandom(4)
             logging.debug("local_client_id %s" % (
-                binascii.hexlify(self.server_info.data.local_client_id),))
+                binascii.hexlify(self.server_info.data.local_client_id), ))
             self.server_info.data.connection_id = struct.unpack(
                 '<I', os.urandom(4))[0] & 0xFFFFFF
         self.server_info.data.connection_id += 1
         return b''.join([struct.pack('<I', utc_time),
                          self.server_info.data.local_client_id, struct.pack(
-                '<I', self.server_info.data.connection_id)])
+                             '<I', self.server_info.data.connection_id)])
 
     def client_pre_encrypt(self, buf):
         ret = b''
@@ -522,7 +522,7 @@ class auth_simple(verify_base):
             if (binascii.crc32(self.recv_buf[:length]) &
                     0xffffffff) != 0xffffffff:
                 logging.info('auth_simple: crc32 error, data %s' %
-                             (binascii.hexlify(self.recv_buf[:length]),))
+                             (binascii.hexlify(self.recv_buf[:length]), ))
                 self.raw_trans = True
                 self.recv_buf = b''
                 if self.decrypt_packet_num == 0:
@@ -544,13 +544,13 @@ class auth_simple(verify_base):
                 time_dif = common.int32((int(time.time()) & 0xffffffff) -
                                         utc_time)
                 if time_dif < 60 * -3 or time_dif > 60 * 3 or common.int32(
-                                utc_time - self.server_info.data.startup_time) < 0:
+                        utc_time - self.server_info.data.startup_time) < 0:
                     self.raw_trans = True
                     self.recv_buf = b''
                     logging.info(
                         'auth_simple: wrong timestamp, time_dif %d, data %s' %
                         (time_dif,
-                         binascii.hexlify(out_buf),))
+                         binascii.hexlify(out_buf), ))
                     return b'E'
                 elif self.server_info.data.insert(client_id, connection_id):
                     self.has_recv_header = True
@@ -561,7 +561,7 @@ class auth_simple(verify_base):
                     self.raw_trans = True
                     self.recv_buf = b''
                     logging.info('auth_simple: auth fail, data %s' %
-                                 (binascii.hexlify(out_buf),))
+                                 (binascii.hexlify(out_buf), ))
                     return b'E'
             self.recv_buf = self.recv_buf[length:]
 
