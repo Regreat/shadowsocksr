@@ -26,6 +26,9 @@ import logging
 import binascii
 import traceback
 import random
+import socks
+
+socks.set_default_proxy(socks.HTTP, "127.0.0.1", 8080)
 
 from shadowsocks import encrypt, obfs, eventloop, shell, common
 from shadowsocks.common import pre_parse_header, parse_header
@@ -469,7 +472,7 @@ class TCPRelayHandler(object):
             if common.to_str(sa[0]) in self._forbidden_iplist:
                 raise Exception('IP %s is in forbidden list, reject' %
                                 common.to_str(sa[0]))
-        remote_sock = socket.socket(af, socktype, proto)
+        remote_sock = socks.socksocket(af, socktype, proto)
         self._remote_sock = remote_sock
         self._fd_to_handlers[remote_sock.fileno()] = self
 
@@ -497,11 +500,12 @@ class TCPRelayHandler(object):
             return
         if result:
             ip = result[1]
+            name = result[0]
             if ip:
 
                 try:
                     self._stage = STAGE_CONNECTING
-                    remote_addr = ip
+                    remote_addr = name
                     if self._is_local:
                         remote_port = self._chosen_server[1]
                     else:
